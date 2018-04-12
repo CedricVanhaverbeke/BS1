@@ -1,0 +1,26 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+         {
+            "type": "perl",
+            "request": "launch",
+            "exec": "C:/Perl64/bin/perl.exe",
+            "execArgs": [],
+            "name": "Perl Debug",
+            "root": "${workspaceRoot}",
+            "program": "${workspaceRoot}/${relativeFile}",
+            "inc": [],
+            "args": [],
+            "stopOnEntry": true
+        },
+        {
+            "type": "perl",
+            "request": "launch",
+            "name": "Perl-Debug remote",
+            "program": "${workspaceFolder}/${relativeFile}",
+            "root": "${workspaceRoot}/",
+            "stopOnEntry": true,
+            "port": 5000
+        }
+    ]
+}
