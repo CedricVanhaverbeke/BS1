@@ -10,6 +10,8 @@ my %gewesten=( "Antwerpen"      => "Vlaanderen", "Henegouwen"   => "Wallonie",
 
 # Juist pushen
 while(($key, $value) = each %gewesten){
+    #Dit doet alles in 1 lijn. Je zou ook apart alles kunnen opschrijven zoals Joris bij oefening 0 uitlegde
+    #Dat is echter useless
     push @{$invertedHash{$value}}, $key; 
 }
 
