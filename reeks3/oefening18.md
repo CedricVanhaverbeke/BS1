@@ -11,6 +11,7 @@ In eerste instantie:
 - Twee hoogste niveaus: tabellen
 - Laagste niveau: hash met keys = alle kandidaatwaarden & values maakt geen zak uit volgens de Joris
 - Veel kans dat we zo'n vraag krijgen op het examen! Laagste niveau is dan meestal een hash
+- Joris gaf ook de hint dat het misschien gemakkelijk is om de hash in het begin al groter te maken zodat geen rekening moet gehouden worden met de logica voor de buren. Zoals bv bij linksonder zal je dan ook 4 buren hebben met gewoon geen enkele kandidaat in.
 
 ## Hoe elimineer je kandidaten?
 Iteratief een criterium toepassen. Als je het genoeg herhaalt zou je een oplossing moeten uitkomen. Dit is enkel waar wanneer je criterium zeker 'straf' genoeg is. Meestal zijn het meerdere criteria.
