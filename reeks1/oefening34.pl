@@ -8,7 +8,7 @@ foreach $key (keys %A){
     print "$key => " . $A{$key} . "\n";
 }
 
-foreach ($key,$value) (keys %A){
+while(($key, $value) = each(%A)){
     print "$key => $value";
 }
 

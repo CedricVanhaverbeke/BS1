@@ -3,10 +3,9 @@
 my $x = 5;
 my $y = 10;
 
-my @arrayMetGetallen = $x..$y;
 
 # @arrayMetGetallen += 1;
-foreach(@arrayMetGetallen){
+foreach($x .. $y){
     print $_;
 }
 

@@ -5,12 +5,8 @@
 
 %A = (1,2,3,4,5,6,7,8,9,10);
 
-for $key (keys %A){
-    $value = %A{$key};
-    $A{$value} = $key ;
-    delete $A{$key};
-}
+%B = reverse %A;
 
-foreach $key (keys %A){
-    print "$key => " . $A{$key} . "\n";
+while(($key, $value) = each(%B)){
+    print "$key => $value \n";
 }

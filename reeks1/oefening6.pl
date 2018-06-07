@@ -5,3 +5,5 @@
 
 my $vooropgezet = 5;
 printf("%.$vooropgezet" . "f", 3.1415926535); #. = concateneeroperator
+print "\n";
+print sprintf("%.2f", 3,145454669);

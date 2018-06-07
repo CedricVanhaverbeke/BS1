@@ -1,16 +1,8 @@
 @lines = <DATA>;
 
-
-
 foreach (@lines) {
-
     print("$_");
-
-
-
 }
-
-
 
 __END__
 

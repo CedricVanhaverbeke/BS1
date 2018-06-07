@@ -4,7 +4,7 @@ my @array = ("eerste", "tweede", "derde", "#iets");
 my $teller = 0;
 foreach my $x (@array) {
     $teller++;
-    last if $x =~ /tw*/n;
+    last if $x =~ /tw*/n; # Deze stopt dus de foreach lus, handige shit yow
 }
 
 print "@array[$teller], $teller";

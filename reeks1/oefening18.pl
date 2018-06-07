@@ -6,6 +6,8 @@
 #van elke aanvullend element telkens één nieuw geheugenelement te alloceren.
 
 @array = (1,2,3);
-print "Arraygrootte is $#array \n";
-$#array *= 2;
-print "Arraygrootte is $#array \n";
+print "Index van het laatste element is $#array \n";
+
+# Op volgende manier verander je de laatste index van een array
+$#array *= 10;
+print "Hallo: $_  \n" foreach @array;

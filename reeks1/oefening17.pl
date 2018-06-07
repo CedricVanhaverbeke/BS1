@@ -4,8 +4,10 @@
 
 my $i = 0;
 @array = ("eerste", "tweede", "derde", "vierde", "vijfde", "zesde");
-@tweedearray = splice @array, -2;
 
-print join(', ', @array);
-print ', ';
-print join(' en ', @tweedearray);
+print (
+    (@array == 0) ? "" : 
+    (@array == 1) ? $array[0] :
+    (@array == 2) ? join " en ", @array:
+    print join(", " , @array[0 .. scalar $#array-1] ,  "en $array[-1]")
+);

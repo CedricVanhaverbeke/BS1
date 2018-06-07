@@ -4,9 +4,8 @@
 
 my @x = (2,4,6,8,10,3,9);
 my @y = (1,3,5,7,9,11);
-my %H = (); #initialiseer
+my %H = (@x); #initialiseer met de waarden van x
 
-@H{@x} = (); #Alle elementen van @x in %H zetten
 delete @H{@y}; #Verwijder alle waarden die in y zitten.
 
-print sort {$a <=> $b} keys %H;
+print join ", ", sort {$a <=> $b} keys %H;

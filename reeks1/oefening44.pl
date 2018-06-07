@@ -1,13 +1,13 @@
+@ARG_COPY = @ARGV; # Kopieer de argumenten zodat we later het bestand nog eens kunnen doorlopen
+
 #Tel de lijnen in een bestand
-open(my $file, "<", "input.txt") or die "Can't open < input.txt: $!";
+1 while(<>);
+print "Aantal lijnen: $.\n"; # This variable holds row count
 
-1 while (<$file>);
-close FILE;
-print "Aantal lijnen: $.\n"; #aantal lijnen die ingelezen zijn
+# Terugzetten van de originele parameters.
+@ARGV = @ARG_COPY;
 
-#Tel het aantal paragrafen in een bestand
-local $/ = "\n\n"; #lege paragrafen zijn wel toegelaten
-local $/ = ''; #lege paragrafen zijn niet toegelaten
-open(my $file, "<", "input.txt") or die "Can't open < input.txt: $!";
-1 while <$file>;
-print "Aantal paragrafen: $.\n"; #$. = aantal lijnen die gelezen zijn
+$/ = ""; # Enable paragraph mode.
+1 while(<>);
+print "Aantal paragrafen: $."; # This variable holds paragraph count
+

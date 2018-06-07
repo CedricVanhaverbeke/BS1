@@ -11,6 +11,9 @@ my $bereikY = 5;
 
 my $arraygrootte = 7;
 
+# Zorgt ervoor dat altijd dezelfde rij gegenereerd wordt.
+srand(15);
+
 
 # Construeer array
 my @arr;
