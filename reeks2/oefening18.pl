@@ -1,7 +1,7 @@
 # Hoe kun je op een string meerdere reguliere expressies toepassen, waarbij elke volgende 
 # reguliere expressie pas begint te werken na de deelstring die aan de vorige reguliere expressie voldoet ?
 
-my $string = "123 4 8 99 6 50 60";
+my $string = "50 4 850 99 6 60";
 
 # Je kan de g modifier op deze manier gebruiken
 while($string =~ /(\d+)/g){
@@ -30,3 +30,12 @@ while ($string =~ /(\d+)/gc) {
 while($string =~ /(\w+)/g) {
     print "Found word: $1 \n";
 }
+
+# De oplossing van deze oefening is dus om de g vlag te gebruiken en daarna de G vlag te gebruiken op volgende manier
+$string =~ /8/g;
+
+# 8 zit nu opgeslagen in de position variabele of zelfs de G vlag op volgende manier
+$string =~ s/\G50/69/g;
+print $string;
+
+# De 50 die meteen volgt op de 8 is dus veranderd naar 69 terwijl de andere niet

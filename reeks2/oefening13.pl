@@ -5,7 +5,5 @@
 #Typ nu bv hallo ik ben $name in standaard invoer.
 $data = <>;
 $name = "Cedric";
-
-$data =~ s/\$\w+/$name/;
-
+$data =~ s/\$(\w+)/${$1}/g;
 print $data;

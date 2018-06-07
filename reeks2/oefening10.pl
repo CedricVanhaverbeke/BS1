@@ -3,5 +3,7 @@
 
 #Set the seperator as nothing an use split on the chunks
 #Read the whole file and use split:
+
+# Voorbeeld zie vorige vraag
 undef $/;
 @chunks = split(/pattern/, <>);

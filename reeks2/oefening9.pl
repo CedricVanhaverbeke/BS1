@@ -1,21 +1,21 @@
 # Verwerk een bestand veld per veld. Je mag veronderstellen dat de 
 # velddelimiter kan omschreven worden met behulp van een reguliere expressie.
 
-#Stel de delimeter in in de input seperator
-my $delimeter = ":";
-local $/ = "$delimeter";
+
+# Zorgt ervoor dat er geen input seperation is
+local $/ = undef;
 
 #Lees het bestand in met de seperator. In @fields[0] staat nu Veld1:
-my @fields = <DATA>;
+$data = <DATA>;
+@array = split(/\/\/\+/, $data);
 
-#Verwijder alle dubbelpunten uit @fields
-$_ =~ s/://g foreach @fields;
-
-
-#Geeft nu Veld1
-print $fields[0];
-
-
+print $array[2];
 
 __DATA__
-Veld1:Veld2:Veld3:Veld4
+Ik ben een veld //+ Ik ben een nieuw veld //+ Ik ben opnieuw een nieuw veld
+Ik ben nog altijd hetzelfde veld als de vorige
+
+
+
+Ik ben nog altijd hetzelfde veld //+
+Ik niet meer

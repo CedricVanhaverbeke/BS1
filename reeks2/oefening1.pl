@@ -30,5 +30,3 @@ print $month;
 print "\n";
 print $year; 
 print "\n";
-
-

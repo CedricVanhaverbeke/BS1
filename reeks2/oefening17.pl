@@ -2,8 +2,7 @@
 # alle tekst te filteren die zich tussen twee specifieke kodes bevindt. Deze kodes kunnen meerdere keren
 #  in het bestand optreden. Pas deze methode eveneens toe om lijnen met lijnnummers in een specifiek interval te filteren.
 
-open(FH, "codes.txt");
-while(<FH>){
+while(<>){
     #inclusief de begin & eindes
     if (/begincode/ .. /eindcode/) {
         print $_;
