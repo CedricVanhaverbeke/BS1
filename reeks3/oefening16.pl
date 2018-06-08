@@ -1,128 +1,131 @@
-#Zaken negeren van de pdf
-#Welke? Als het iets begint met endstream
-#Lijnen die ons wel interesseren:
-#Kop en tail filteren
-#Twee coordinaten => eindigen op m, twee coordinaten => eindigen op l. DIT IS 1 Koppel
-#Joris zegt: 2 keer inlezen
-#1 keer om de verschillende waarden in te lezen
+# !!!Zet deze lijn in commentaar als je zelf je file wil meegeven als argument!!!
+@ARGV = "reeks3/s11.pdf";
 
-#mappingsmechanisme om die floating getallen te mappen op gehele getallen 
-
-#2e keer inlezen: 
-
-#Nodig om twee keer in te lezen:
+# Kopiëren zodat we straks opnieuw kunnen lezen.
 @ARGV_COPY = @ARGV;
 
-$vlag = 0;
-
+# Deze flag is nodig om te kijken of we al voorbij een bepaald punt zijn in het bestand.
+$flag = 0;
 while(<>){
-    $vlag = 1 if $_ =~ /1.764 w/;
-    $tweedeVlag = 1 if $_ =~ /endstream/;
-    next if $_ =~ /1.764 w/;
-    unless($tweedeVlag == 1){
-        if($vlag == 1){
-            $previous = $_ if $_ =~ /[\d.]+ [\d.]+ m/;
-            if ($_ =~ /[\d.]+ [\d.]+ l/ && $previous != "") {
-                $next = $_ ;
-                # Deze lijn print de koppels
-                # print $previous . $next . "\n";
-                
-                @waarden1 = split ' ', $previous;
-                @waarden2 = split ' ', $next;
 
-                $waarden1[0] =~ s/\./,/;
-                $waarden1[1] =~ s/\./,/;
-                $waarden2[0] =~ s/\./,/;
-                $waarden2[1] =~ s/\./,/;
-                
-                #Steek de waarden in de map, met als values undef
-                $xwaarden{$waarden1[0]} = undef;
-                $ywaarden{$waarden1[1]} = undef;
+    $flag = 1 if $_ =~ /\d\.\d{3} w/;
 
-                $xwaarden{$waarden2[0]} = undef;
-                $ywaarden{$waarden2[1]} = undef;
+    if($_ =~ /^\d+\.?\d* \d+\.?\d* [ml]$/ && $flag == 1){
+        ($x, $y) = split(" ");
+        # Maak van de lange getallen getallen van 3 cijfers.
 
-                $previous = ""; 
-            }
-            
-        }
-    }
+        $xwaarden{$x} = undef unless exists($xwaarden{$x});
+        $ywaarden{$y} = unedf unless exists($ywaarden{$y});
+    };
+
+    # Door deze lijn stopt het lezen na het vinden van endstream
+    last if $_ =~ /endstream/;
 }
 
+# De waarden zitten nu in de map. Deze gaan we mappen naar eenvoudige waarden 
+# voor in een tweedimensionale array
 $value = 0;
 foreach $element (sort{$a <=> $b} keys %xwaarden){
     $xwaarden{$element} = $value;
+    $grootsteX = $value;
     $value += 2;
 }
 
 $value = 0;
 foreach $element (sort{$a <=> $b} keys %ywaarden){
     $ywaarden{$element} = $value;
+    $grootsteY = $value;
     $value += 2;
 }
 
-print $_ . " => " . $ywaarden{$_} . "
-" foreach sort{$a <=> $b}  keys %ywaarden; 
+# Ik stel hier de begin- en eindwaarden in op -2 zodat we kunnen zien 
+# Of beiden ingevuld zijn om de array aan te vullen
+# Als we de array ingevuld hebben zet ik ze terug op -2.
+$X1 = -2;
+$X2 = -2;
+$Y1  = -2;
+$Y2 = -2;
 
-print $_ . " => " . $xwaarden{$_} . "
-" foreach sort{$a <=> $b}  keys %xwaarden; 
-
-#Om een tweede keer in te lezen:
+# Nu gaan we de lijnen een tweede keer gaan uitlezen
+# We hebben daarvoor de oude ARGV gekopieerd in het begin
 @ARGV = @ARGV_COPY;
 
-$vlag = 0;
-$tweedeVlag = 0;
-
-@lijnen;
-
+# Het uitlezen verloopt op dezelfde manier als in het begin
+$flag = 0;
 while(<>){
-    $vlag = 1 if $_ =~ /1.764 w/;
-    $tweedeVlag = 1 if $_ =~ /endstream/;
-    next if $_ =~ /1.764 w/;
-    unless($tweedeVlag == 1){
-        if($vlag == 1){
-            $previous = $_ if $_ =~ /[\d.]+ [\d.]+ m/;
-            if ($_ =~ /[\d.]+ [\d.]+ l/ && $previous != "") {
-                $next = $_ ;
-                # Deze lijn print de koppels
-                # print $previous . $next . "\n";
-                
-                @waarden1 = split ' ', $previous;
-                @waarden2 = split ' ', $next;
 
-                $waarden1[0] =~ s/\./,/;
-                $waarden1[1] =~ s/\./,/;
-                $waarden2[0] =~ s/\./,/;
-                $waarden2[1] =~ s/\./,/;
+    $flag = 1 if $_ =~ /\d\.\d{3} w/;
 
-                $x1_mapped = $xwaarden{$waarden1[0]};
-                $y1_mapped = $xwaarden{$waarden1[1]};
-                $x2_mapped = $xwaarden{$waarden2[0]};
-                $y2_mapped = $xwaarden{$waarden2[1]};
+    if($_ =~ /^\d+\.?\d* \d+\.?\d* m$/ && $flag == 1){
+        ($x, $y) = split(" ");
+        $X1 = $xwaarden{$x};
+        $Y1 = $ywaarden{$y};
+    };
+    if($_ =~ /^\d+\.?\d* \d+\.?\d* l$/ && $flag == 1){
+        ($x, $y) = split(" ");
+        $X2 = $xwaarden{$x};
+        $Y2 = $ywaarden{$y};
+    };
 
-                
-                if ($x1_mapped eq $x2_mapped) {
-                    for ($i = $y2_mapped + 1; $i < $y1_mapped; $i+=2) {
-                        $lines[$i][$x1_mapped] = "|";
-                    }
-                }
+    # Enkel als alle coordinaten ingevuld zijn mogen we volgende stap ondernemen
+    if($X1 != -2 && $X2 != -2 && $Y1 != -2 && $Y2 != -2){
 
-                if ($y1_mapped eq $y2_mapped) {
-                    for ($i = $x1_mapped + 1; $i < $x2_mapped; $i+=2) {
-                        $lines[$y1_mapped][$i] = "-";
-                    }
-                }
-                $previous = ""; 
+        # Als de x-coordinaten gelijk zijn betekent het dat we verticaal moeten werken
+        if($X1 == $X2){
+            # Nu is er nog de mogelijkheid dat de tweede coordinaat voor of na de eerste ligt.
+            # We moeten een lijn trekken tot de maximale waarde
+            if ($Y2 > $Y1) {
+                $min = $Y1;
+                $max = $Y2;
+                } else {
+                $min = $Y2;
+                $max = $Y1;
             }
-            
+
+            # Hier steken we de lijn in het doolhof
+            for ($i = $min; $i<= $max; $i++) {
+                    $doolhof[$i][$X1] = "|";
+                }
+            }
+
+        # Als de y-coordinaten gelijk zijn betekent het dat we horizontaal moeten werken
+        # De rest is gelijklopend aan vorige stap
+        if($Y1 == $Y2){
+            if ($X2 > $X1) {
+            $min = $X1;
+            $max = $X2;
+            } else {
+            $min = $X2;
+            $max = $X1;
+            }
+
+            for ($i = $min; $i<= $max; $i++) {
+                $doolhof[$Y1][$i] = "-";
+            }
         }
+
+        # Resetten van de coordinaten
+        $X1 = -2;
+        $X2 = -2;
+        $Y1  = -2;
+        $Y2 = -2;
     }
+
+    
+
+    # De lijnen na endstream hebben we niet nodig
+    last if $_ =~ /endstream/;
 }
 
-foreach $element (@lijnen){
-    foreach $secondElement (@{$element}){
-        print "+" if $secondElement == undef;
-        print $secondElement;
+# Het doolhof heeft blijkbaar zulke coordinaten dat het onderaan zou beginnen
+# ipv bovenaan. Daarom staat er hier een reverse
+foreach $row (reverse @doolhof) {
+    foreach $element (@$row) {
+        if ($element eq "|" || $element eq "-") {
+          print $element;
+        } else {
+          print " ";
+        }
     }
     print "\n";
 }
