@@ -2,38 +2,43 @@
 # Steek al die info in een hash met als sleutel de naam en key een referente naar de tabel die je net gemaakt hebt.
 # De ouders worden opgeslagen als referenties
 
-my $counter = 0;
-%hash = ();
+while(<DATA>){
+    chomp; # Om lege lijnen weg te werken
+    ($regio, $ouder, $population, $area) = split(";");
+    $hash{$regio} = {
+        regio => $regio,
+        ouder => $hash{$ouder},
+        kinderen => [], # Anonieme array voor kinderen
+        population => $population ? $population : 0,
+        area => $area ? $area : 0
+    };
+    # Aangezien de kinderen allemaal na de ouder komen kan je ze hier al toevoegen
+    $ouderhash = $hash{$ouder};
+    push @{$ouderhash->{kinderen}}, $regio;
 
-while(<>){
-    ($naam, $ouder, $inwoners, $opp) = split ";", $_;
-        $hash{$naam} = [$naam, $hash{$ouder}, [], $inwoners ? $inwoners : 0, $opp ? $opp : 0 ];
-
-        #Push alle kinderen
-        push @{$hash{$ouder}->[2]}, $naam if $ouder;
-    
-        #inwoners en oppervlakte pushen, gelukt
-        $referentie = $hash{$naam}->[1];
-        while($referentie){
-            $hash{$referentie->[0]}->[3] += $inwoners;
-            $hash{$referentie->[0]}->[4] += $opp;
-            $referentie = $referentie->[1];
+    $thishash = $hash{$regio};
+        while(exists($thishash->{ouder})){
+            $thishash->{ouder}{population} += $population;
+            $thishash = $thishash->{ouder};
         }
 }
 
-$root = $hash{"Belgie"};
-print $root;
-
-#for $key (keys %hash){
-#    print "naam : " . $hash{$key}->[0] . "\n";
-#    print "ouder : " . $hash{$key}->[1]->[0] . "\n";
-#    print "kinderen: ";
-#    print join ',' , @{$hash{$key}->[2]};
-#    print "\n";
-#    print "inwoners : " . $hash{$key}->[3] . "\n";
-#    print "oppervlakte : " . $hash{$key}->[4] . "\n";
-#    print "\n";
-#}
+# print
+ while(($key, $value) = each(%hash)){
+     print "$key met kinderen ";
+     print join ", ", @{$value->{kinderen}};
+     print "en populatie ". $value->{population};
+     print "\n";
+ }
 
 
-   
+
+
+
+__DATA__
+Belgie;;;
+Vlaanderen;Belgie;;
+Limburg;Vlaanderen;;
+Arr.Hasselt;Limburg;;
+As;Arr.Hasselt;7488;22.07
+Beringen;Arr.Hasselt;40930;78.30

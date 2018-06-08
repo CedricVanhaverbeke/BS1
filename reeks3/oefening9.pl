@@ -13,6 +13,7 @@
             "Simon"     =>  "De Bruycker"
                                     );
 
+# Verplicht hier om de lijst mee te geven als scalairen. Je geeft eigenlijk een lijst mee van scalairen door de (..)
 foreach $ref (\%eerste, \%tweede){
     while(($key, $value) = each %$ref){
         push @{$output{$key}}, $value;
