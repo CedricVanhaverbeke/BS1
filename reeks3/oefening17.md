@@ -1,4 +1,4 @@
-# Oefening 19 notities
+# Oefening 17 notities
 
 - Eerst een tabel maken met een lengte van 0 tot het einde
 - De waarden van de x & y cellen zijn veelvouden van 16.
