@@ -1,82 +1,139 @@
-#Nodig om twee keer in te lezen:
+# Hier geef ik het argument al mee
+@ARGV = "reeks3/oefening17/05.svg";
+
+# Opslaan van de originele argumentenarray
 @ARGV_COPY = @ARGV;
 
-%cellen;
-@lijntjes;
-
 while(<>){
-    if($_=~ /<title.+$/){
-        $_ =~ s/<title>//g;
-        @splitted = split ' ', $_;
-        $kolommen = @splitted[0];
-        $rijen = @splitted[2];
-        print $kolommen . " " . $rijen . "
-        ";
+    # STAP 1: Hoogte en breedte weten
+    ($breedte, $hoogte) = ($1, $2) if /.*<title>(\d+) by (\d+) .*<\/title>.*/;
+
+    # STAP 2: Lijntjes opslaan
+    if(/.*<line x1="(\d+)" y1="(\d+)" x2="(\d+)" y2="(\d+)" \/>/){
+         push @lijntjes, {x1 => ($1/16) - 1, y1 => ($2/16) - 1, x2 => ($3/16) - 1, y2 => ($4/16) - 1};
     }
 
-    if($_ =~ m/<line.+$/) {
+    # STAP 3: Effectieve cellen aanmaken, hiervoor hebben we de waarden uit stap 1 nodig
+    if(/.*<text x="(\d+)" y="(\d+).*"/){
+        $x = int($1 / 16) - 1; # We moesten hier delen door 16 van Joris
+        $y = int($2 / 16) - 1; # De -1 staat hier zodat straks de array vanaf 0 zal tellen
 
-        ($x1, $y1 ,$x2, $y2) = $_ =~ m/<line x1="([0-9]+)" y1="([0-9]+)" x2="([0-9]+)" y2="([0-9]+)" .+$/;
-        
-        foreach $element (($x1, $y1 ,$x2, $y2)){
-            $element = $element / 16;
-        }
+        # Zoek de plaats van de cel in de array volgens de x- en ywaarden.
+        $plaats = $y * $breedte + $x;
 
-        push @lijntjes, [$x1, $y1, $x2, $y2];
-        print "$x1, $y1, $x2, $y2 
-        ";
+        # In elk stapje zet ik hier de cijfers op -1 als ze geen buur hebben
+        $boven = $plaats - $breedte;
+        $boven = "x" if $y == 0;
+
+        $rechts = $plaats + 1;
+        $rechts = "x" if $x == $breedte - 1;
+
+        $onder = $plaats + $breedte;
+        $onder = "x" if $y == $hoogte - 1;
+
+        $links = $plaats - 1;
+        $links = "x" if $x == 0;
+
+        # Hier steken we dan de cel op juiste plaats in de array met zijn buren in een hash.
+        $doolhof[$x][$y] = {
+            boven => $boven,
+            rechts => $rechts,
+            onder => $onder,
+            links => $links
+            }
     }
-    if($_ =~ m/<text x="([0-9]+)" y="([0-9]+)" .+<\/text>/) {
-        ($x, $y) = $_ =~ m/<text x="([0-9]+)" y="([0-9]+)" .+<\/text>/;
-        $x = int($x / 16);
-        $y = int($y / 16);
-        $cel =  $y * $kolommen - ($kolommen - $x);
+}
 
-        if($cel - $kolommen < 0){
-            $buurboven = 0;
-        } else {
-            $buurboven = $cel - $kolommen;
+# Nu dat gebeurd is moeten we de effectieve buren te weten komen door buren waar een lijntje tussen staat 
+# te verwijderen
+for $element (@lijntjes){
+    ($x1, $y1, $x2, $y2) = ($element->{x1}, $element->{y1}, $element->{x2}, $element->{y2});
+
+    # Verticale lijn
+    if($x1 == $x2){
+        for $i ($y1 .. $y2-1){
+            $doolhof[$x1][$i]->{links} = -1 if $x1 <= 4;
+            $doolhof[$x1-1][$i]->{rechts} = -1 if $x1 - 1 >= 0;
         }
+    }
 
-        if($cel + 1 > $kolommen*$y){
-            $buurrechts = 0;
-        } else {
-            $buurrechts = $cel + 1;
+    # Horziontale lijn
+    if($y1 == $y2){
+        for $i ($x1 .. $x2 - 1){
+            $doolhof[$i][$y1-1]->{onder} = -1 if $y1-1 >= 0;
+            $doolhof[$i][$y1]->{boven} = -1 if $y1 <= 4;
         }
+    }
 
-        if($cel + $kolommen > 20){
-            $buuronder = 0;
-        } else {
-            $buuronder = $cel + $kolommen;
+}
+$changes = 69;
+while($changes > 0){
+$changes = 0;  
+    # Verwijderen van de cellen met 3 muren
+    # Verwijderen = op die vierde plaats een muur zetten
+        for $j (0 .. scalar $hoogte - 1){
+        for $i (0 .. $breedte - 1){
+            # Scannen op 3 muren
+            $aantalmuren = 0;
+            while((my $key, my $value) = each(%{$doolhof[$i][$j]})){
+                $aantalmuren++ if $value == -1;
+            }
+            # 4e muur in de plaats als er drie muren zijn
+            ($doolhof[$i][$j]->{boven}, $doolhof[$i][$j]->{rechts}, $doolhof[$i][$j]->{onder}, $doolhof[$i][$j]->{links})
+                = (-1, -1, -1, -1) if $aantalmuren == 3;
+            $changes++ if $aantalmuren == 3;
+
+                # Bijhouden welke elementen nu nooit meer bereikbaar zijn
+            $onbereikbare{$j*($hoogte+1) + $i} = undef if $aantalmuren == 3;
         }
+    }
 
-        if($cel % $kolommen == 1){
-            $buurlinks = 0;
-        } else {
-            $buurlinks = $cel - 1;
+    foreach(keys %onbereikbare){
+            for $j (0 .. scalar $hoogte - 1){
+                for $i (0 .. $breedte - 1){
+                    while((my $key, my $value) = each ($doolhof[$i][$j])){
+                        delete $onbereikbare{$_} if $_ == $value;
+                        $doolhof[$i][$j]->{$key} = -1 if $_ == $value;
+                    }
+                }
+            }
+    }
+}
+
+# Nu het wegschrijven naar een ander bestand
+# Backup maken van het vorig
+$^I = ".origineel";
+
+# Kopie terugzetten
+@ARGV = @ARGV_COPY;
+
+$vlag = 0;
+while(<>){
+    print $_;
+    $vlag = 1 if /.*<title>.*<\/title>.*/;
+    if($vlag == 1){
+        print "<g fill=\"blue\" stroke=\"none\">\n";
+          for $j (0 .. $hoogte-1){
+            for $i (0 .. $breedte-1){
+                $aantalfoute = 0;
+                while((my $key, my $value) = each($doolhof[$i][$j])){
+                    $aantalfoute++ if $value == -1;
+                }
+                if($aantalfoute == 2){
+                my $y1 = ($j+1) * 16;
+                my $y2 = ($j+2) * 16;
+                my $x1 = ($i+1) * 16;
+                my $x2 = ($i+2) * 16;
+                # Voor elke lijn die geen 4 -1'en bevat moeten we nu een vierkantje zetten
+                print "<polygon points=\"$x1,$y1 $x2,$y1 $x2,$y2, $x1,$y2\" />\n"
+                }
+            }
         }
-        $cellen{$cel} = [$buurboven, $buurrechts, $buuronder, $buurlinks];
-
+        print "</g>\n";
+        $vlag = 0;
     }
 }
 
 
 
 
-#Printen van de tabel
-foreach $cel (sort{$a <=> $b} keys %cellen){
-    print $cel . " : ";
-    foreach $buur (@{$cellen{$cel}}){
-        print $buur . ", " ;
-    }
-    print "
-    ";
-}
-
-foreach $lijntje (@lijntjes){
-    foreach $waarde (@{$lijntje}){
-        print $waarde . ",";
-    }
-    print "
-    ";
-}

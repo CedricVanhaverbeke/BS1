@@ -8,9 +8,9 @@
 $flag = 0;
 while(<>){
 
-    $flag = 1 if $_ =~ /\d\.\d{3} w/;
+    $flag = 1 if /\d\.\d{3} w/;
 
-    if($_ =~ /^\d+\.?\d* \d+\.?\d* [ml]$/ && $flag == 1){
+    if(/^\d+\.?\d* \d+\.?\d* [ml]$/ && $flag == 1){
         ($x, $y) = split(" ");
         # Maak van de lange getallen getallen van 3 cijfers.
 
@@ -54,14 +54,14 @@ $Y2 = -2;
 $flag = 0;
 while(<>){
 
-    $flag = 1 if $_ =~ /\d\.\d{3} w/;
+    $flag = 1 if /\d\.\d{3} w/;
 
-    if($_ =~ /^\d+\.?\d* \d+\.?\d* m$/ && $flag == 1){
+    if(/^\d+\.?\d* \d+\.?\d* m$/ && $flag == 1){
         ($x, $y) = split(" ");
         $X1 = $xwaarden{$x};
         $Y1 = $ywaarden{$y};
     };
-    if($_ =~ /^\d+\.?\d* \d+\.?\d* l$/ && $flag == 1){
+    if(/^\d+\.?\d* \d+\.?\d* l$/ && $flag == 1){
         ($x, $y) = split(" ");
         $X2 = $xwaarden{$x};
         $Y2 = $ywaarden{$y};
