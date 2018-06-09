@@ -8,12 +8,18 @@
 
 @S=(16,13,5,12,9,1,21,15);
 
+# Zet alle waarden van 1 tot 25 in de hash met als waarde undefined
 %H = map {$_, undef} (1..25);
+
+
+#Verwijder alle waarden van de array S uit de hash H.
 delete @H{@S};
+
 #voor elk element in de hash ga je opnieuw een deelverzameling maken die gaat sorteren op afstand tussen de twee getallen.
 #Nu zoek je de kortste afstand voor elke key
 for $h (keys %H){
-    ($H{$h}) = sort {abs($h-$a) <=> ($h-$b) or $a <=> $b} @S;
+    # Neem het eerste element van de array gesorteerd op absolute waarde met de $h
+    ($H{$h}) = sort {abs($h-$a) <=> abs($h-$b) or $a <=> $b} @S;
 }
 
 print map {"$_:\t$H{$_}\n"} sort {$a <=> $b} keys %H;
