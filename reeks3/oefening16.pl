@@ -1,5 +1,5 @@
 # !!!Zet deze lijn in commentaar als je zelf je file wil meegeven als argument!!!
-@ARGV = "reeks3/s11.pdf";
+@ARGV = "reeks3/oefening16/s11.pdf";
 
 # Kopiëren zodat we straks opnieuw kunnen lezen.
 @ARGV_COPY = @ARGV;
