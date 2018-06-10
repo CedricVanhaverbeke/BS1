@@ -1,193 +1,167 @@
-#Inlezen in array en als er geen waarde in zit een hash plaatsen
+# Argument instellen voor de numbrix
+@ARGV = "reeks3/numbrix/A.numbrix";
+@ARGV_COPY = @ARGV;
 
-@ARG_COPY = @ARGV;
-
-my $i = 0;
+# Eerste keer doorlopen
 while(<>){
-    my @values = split(' ', $_);
-    foreach $cel (@values){
-        if($cel == "..."){
-            push @{$cellen[$i]}, {};
+    $hoogte++;
+    $kolom = 1;
+    while(/ ?([^\s]{3}) ?/g){
+       $aantal++;
+       $getallen{int $1} = {
+           x => $kolom,
+           y => $hoogte
+       } if $1 =~ /(\d{3})/;
+       $kolom++;
+    }
+}
+# Voor de array sebietjes
+$breedte = $aantal / $hoogte;
+
+# Vind de inverse van deze getallen
+# Deze hash bevat nu alle mogelijke getallen
+%inverse = map {$_, undef} (1..$aantal);
+# Hier verwijderen we de getallen die al in het bestand zaten
+delete @inverse{keys %getallen};
+
+# Voeg alle mogelijke buren toe behalve als het getal al in de numbrix stond
+# We maken hier een uitgebreide matrix zodat we niet moeten letten op buren straks
+# Extra voordeel is ook dat we gewoon kunnen werken zoals de tekening gegeven is
+for my $i (0 .. $breedte + 1){
+    for my $j (0 .. $hoogte + 1){ 
+        if($i == 0 || $j == 0 || $j > $hoogte || $i > $breedte){
+            $numbrix[$i][$j] = {-1};
         } else {
-            push @{$cellen[$i]}, {int($cel) => ' '};
-            $inversekandidaten{int($cel)} = " ";
-        }
-    }
-    $i++;
-}
-#Aantal getallen vinden: lengte * breedte van de array
-my $breedte = scalar @cellen;
-my $lengte = scalar @{$cellen[0]};
-my $grootte = $breedte * $lengte;
-
-#Overlopen van alle inverse kandidaten om zo de echte kandidaten te weten te komen
-for (my $i=1; $i <= $grootte ; $i++) {
-   $kandidaten{$i} = " " if !exists $inversekandidaten{$i};
-}
-
-foreach $cel (@cellen){
-    foreach $element (@{$cel}){
-        $element = %kandidaten if scalar keys %{$element} == 0;
-    }
-}
-
-foreach $cel (@cellen){
-    foreach $element (@{$cel}){
-        if(scalar keys %{$element} == 0){
-            #Deze lijn geeft een kopie mee van de kandidaten. Dit is nodig aangezien je niet wilt dat de referentie
-            #naar de kandidaten overal inzit. Als je verder in het programma de lijst aanpast ga je dan zien dat het 
-            #mislukt.
-            $element = {%kandidaten};
+            $numbrix[$i][$j] = {%inverse};
         }
     }
 }
 
-#Eerste criterium
+while(($key) = each(%getallen)){
+    $numbrix[$getallen{$key}->{x}][$getallen{$key}->{y}] = {$key};
+}
 
-# We gaan nu zoeken naar voor elk element in de hash waarmee we bezig zijn of zijn buren zowel een getal
-# Groter en kleiner dan hem bevat. Als dit het geval is mag het cijfer blijven staan, anders niet.
-# We blijven dit herhalen tot er geen changes meer zijn om uit te voeren.
+# Criterium 1
+$aantalChanges = 69;
+while($aantalChanges > 0){
+    $aantalChanges = 0;
+    for my $i (1 .. $breedte){
+        for my $j (1 .. $hoogte){
+            @kandidaten = sort { $a <=> $b } keys %{$numbrix[$i][$j]};
 
-$stop = 0;
-while($stop < 4){
-    
+            next if scalar @kandidaten == 1;
 
-    $aantalChanges = -1;
-    while($aantalChanges != 0){
-        $aantalChanges = 0;
-        for (my $i=0; $i < $lengte; $i++) {
-            for (my $j=0; $j < $breedte; $j++) {
+            @bovenbuur = sort { $a <=> $b } keys %{$numbrix[($i-1)][$j]};
+            @rechterbuur = sort { $a <=> $b } keys %{$numbrix[$i][($j+1)]};
+            @onderbuur = sort { $a <=> $b } keys %{$numbrix[($i+1)][$j]};
+            @linkerbuur = sort { $a <=> $b } keys %{$numbrix[$i][($j-1)]};
 
-            # Gaat alle elementen uit de hash overlopen waarmee we bezig zijn
-            foreach $element(keys %{$cellen[$i][$j]}){
+            for $kandidaat(@kandidaten){
+                @gevonden = ();
+                %seen = ();
 
-                    # Deze twee veriabelen gaan kijken of er een element groter en kleiner aanwezig is in de lijst.
-                    $eentjeGroterAanwezig = 0;
-                    $eentjeKleinerAanwezig = 0;
-                
+                push @gevonden, grep {$_ == $kandidaat + 1 || $_ == $kandidaat - 1 } @bovenbuur;
+                push @gevonden, grep {$_ == $kandidaat + 1 || $_ == $kandidaat - 1 } @rechterbuur;
+                push @gevonden, grep {$_ == $kandidaat + 1 || $_ == $kandidaat - 1 } @onderbuur;
+                push @gevonden, grep {$_ == $kandidaat + 1 || $_ == $kandidaat - 1 } @linkerbuur;
 
-                    #Deze ifs zorgen ervoor dat we niet buiten de lijst gaan
-                if($j+1 < $breedte){
-                    if(exists ${$cellen[$i][$j+1]}{$element+1}){
-                        $eentjeGroterAanwezig = 1;
+                $seen{$_}++ for @gevonden;
+
+                if(scalar keys %seen < 2) {
+                    if(($kandidaat == $aantal || $kandidaat == 1) && scalar keys %seen == 1) {
+                        next;
                     }
-                    if(exists ${$cellen[$i][$j+1]}{$element-1}){
-                        $eentjeKleinerAanwezig = 1;
-                    }
+
+                # Als je hier komt, geen twee buren gevonden.
+                delete $numbrix[$i][$j]->{$kandidaat};
+                $aantalChanges++;
+                print "$i.$j-$kandidaat ";
                 }
+            }
+        }
+    }
 
-                    if($j - 1 >= 0){
-                    if (exists ${$cellen[$i][$j-1]}{$element+1}){
-                        $eentjeGroterAanwezig = 1;
-                    }
-                    if (exists ${$cellen[$i][$j-1]}{$element-1}){
-                        $eentjeKleinerAanwezig = 1;
-                    }
-                }
+    print "\n";
 
-                if($i + 1 < $lengte){
-                    if (exists ${$cellen[$i+1][$j]}{$element+1}){
-                        $eentjeGroterAanwezig = 1;
-                    }
-                    if (exists ${$cellen[$i+1][$j]}{$element-1}){
-                        $eentjeKleinerAanwezig = 1;
-                    }
-                }
+    # Printen
+    print "\n";
+    for my $i (1 .. $breedte){
+        for my $j (1 .. $hoogte){ 
+        printf("cel %i.%i: ", $i, $j);
+        print join " ,", sort {$a <=> $b} keys $numbrix[$i][$j];
+        print "\n";
+        }
+    }
 
-                if($i - 1 >= 0){
-                    if (exists ${$cellen[$i-1][$j]}{$element+1}){
-                        $eentjeGroterAanwezig = 1;
-                    }
-                    if (exists ${$cellen[$i-1][$j]}{$element-1}){
-                        $eentjeKleinerAanwezig = 1;
-                    }
+
+    if($aantalChanges > 0){
+        # Terug vanaf criterium 1 starten
+        next;
+    }
+
+    # Criterium 2
+
+    # Overlopen welke cellen met 1 waarde er allemaal zijn
+    @enkelingen = ();
+    for my $i (1 .. $breedte){
+        for my $j (1 .. $hoogte){
+            if(scalar keys $numbrix[$i][$j] == 1){
+                while(($key) = each($numbrix[$i][$j])){
+                    push @enkelingen, $key;
                 }
-                    
-                    #Verwijder de cel als er zowel een grotere als kleinere in de buren zit.
-                    #Bug? Niet verwijderen als er maar 1 element meer inzit.
-                    if($eentjeGroterAanwezig == 0 || $eentjeKleinerAanwezig == 0){
-                        if(scalar keys %{$cellen[$i][$j]} != 1){
-                            delete $cellen[$i][$j]->{$element};   
-                            $aantalChanges++; 
-                        }
+            }
+        }
+    }
+
+    # Nu deze allemaal gaan verwijderen uit de anderen
+    for my $i (1 .. $breedte){
+            for my $j (1 .. $hoogte){
+                if(scalar keys $numbrix[$i][$j] > 1){
+                    for $enkeling (@enkelingen){
+                        if(exists $numbrix[$i][$j]->{$enkeling}){
+                        delete $numbrix[$i][$j]->{$enkeling};
+                        $aantalChanges++; 
                     }
                 }
             }
         }
     }
 
+    if($aantalChanges > 0){
+        # Terug naar criterium 1
+        next;
+    }
 
-    #Tweede criterium
-    # Overloop alles om de elementen te vinden die als enige waarden in de array staan
-    for (my $i=0; $i < $lengte; $i++) {
-        for (my $j=0; $j < $breedte; $j++) {
-            foreach $element(keys %{$cellen[$i][$j]}){
-                push @singuliereElementen, $element if scalar keys %{$cellen[$i][$j]} == 1;
+    # Criterium 3
+    %enigen = undef;
+    for my $i (1 .. $breedte){
+        for my $j (1 .. $hoogte){
+            if(scalar keys $numbrix[$i][$j] > 1){
+                while(($key) = each($numbrix[$i][$j])){
+                    $enigen{$key}++;
+                }
             }
         }
     }
 
-    for (my $i=0; $i < $lengte; $i++) {
-   for (my $j=0; $j < $breedte; $j++) {
-       foreach (@singuliereElementen){
-           delete $cellen[$i][$j]->{$_} if scalar keys %{$cellen[$i][$j]} != 1;
-       }
-   }
-}
-
-    $stop++;
-}
-
-
-
-print "
-   ";
-
-for $i (0..$lengte-1) {
-   for $j(0..$breedte-1) {
-       while(($key) = each %{$cellen[$i][$j]}){
-           printf "%3s", $key;
-       }
-   }
-   print "
-   ";
-}
-
-   #Deze print alle cellen met zijn mogelijkheden uit.
-    #for (my $i=0; $i < $breedte; $i++){
-    #    for (my $j=0; $j < $lengte; $j++) {
-    #        print "
-    #        ";
-    #        print "$i.$j= ";
-    #        print join " ", sort {$a <=> $b} keys %{$cellen[$i][$j]};
-    #        print "
-    #        ";
-    #    }
-    #}
-
-@ARGV = @ARG_COPY;
-$^I = ".opgave";
-
-if(<>){
-    for $i (0..$lengte-1) {
-        for $j(0..$breedte-1) {
-            while(($key) = each %{$cellen[$i][$j]}){
-                printf "%3s", $key;
+    @sologetallen =  grep {$enigen{$_} == 1} keys %enigen;
+    for my $i (1 .. $breedte){
+        for my $j (1 .. $hoogte){
+            if(scalar keys $numbrix[$i][$j] > 1){
+                for $solo (@sologetallen){
+                    $aantalChanges++ if exists $numbrix[$i][$j]->{$solo};
+                    $numbrix[$i][$j] = {$solo} if exists $numbrix[$i][$j]->{$solo};
+                }
             }
         }
-        print "
-        ";
     }
 }
+print "\n\n\n";
+print "ANTWOORD: \n";
 
-
-
-#Derde criterium
-
-
-
-
-
-
-
-
+for my $i (1 .. $breedte){
+    for my $j (1 .. $hoogte){
+        printf("%03s ", (keys $numbrix[$i][$j])[0]);
+    }
+    print "\n";
+}

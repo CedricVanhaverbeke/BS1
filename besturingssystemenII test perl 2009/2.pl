@@ -1,12 +1,12 @@
 # Naam student: 
 #
 # Status implementatie:
-#   één enkele regular expression voor voetballer gegevens ? 
+#   ï¿½ï¿½n enkele regular expression voor voetballer gegevens ? 
 #        extractie nationaliteit ? 
 #        extractie naam speler ? 
 #        extractie positie speler ? 
 #        extractie ploegidentificatie laatste werkgever ? 
-#   één enkele regular expression voor club gegevens ? 
+#   ï¿½ï¿½n enkele regular expression voor club gegevens ? 
 #        extractie ploegidentificatie ? 
 #        extractie ploegnaam ? 
 #        extractie capaciteit stadion ? 
@@ -37,12 +37,41 @@
 
 
 
-print "<HTML><BODY><TABLE border=1 cellspacing=0 cellpadding=0><TR><TH>&nbsp;</TH>\n";
-print "</TR>\n";
+# print "<HTML><BODY><TABLE border=1 cellspacing=0 cellpadding=0><TR><TH>&nbsp;</TH>\n";
+# print "</TR>\n";
 
 
 
-print "</TABLE></BODY></HTML>\n";
+# print "</TABLE></BODY></HTML>\n";
+
+# slurp mode
+$/ = undef;
+# Data in stdin steken
+$_ = <DATA>;
+
+#File even bijhouden in andere variabele
+$f = $_;
+s/.*?(<voetballer.*)/\1/ms;
+s/^<\/personen>.*//ms;
+
+# In $_ zitten nu enkel voetballers
+while(/<voetballer id=\"(.*?)\" nationaliteit=\"(.*?)\">.*?<naam>(.*?)<\/naam>.*?<foto>(.*?)<\/foto>.*?<positie>(.*?)<\/positie>(.*?)<\/voetballer>/gs){
+  print "$1 $2 $3 $4 $5 $6\n";
+  push @voetballers, {
+    id => $1,
+    nationaliteit => $2,
+    naam => $3,
+    foto => $4,
+    positie => $5
+  }
+}
+
+for $i (0 .. scalar @voetballers){
+  while(($key, $value) = each(@voetballers[$i])){
+    print "$key: $value\n";
+  }
+  print "\n\n";
+}
 
 __DATA__
 <personen>
