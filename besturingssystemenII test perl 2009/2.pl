@@ -27,6 +27,22 @@
 #
 # Eventuele tekortkomingen: 
 #
+use Data::Dumper;
+
+sub printVoetballers {
+  for $i (0 .. scalar @voetballers){
+    while(($key, $value) = each(@voetballers[$i])){
+      print "$key: $value\n";
+    }
+  print "\n\n";
+  }
+}
+
+sub printLandCodes {
+  while(($key, $value) = each(%codes)){
+    print "$key: $value\n";
+  }
+}
 
 %landcodes = (
     "Belgie"           => ["BEL"],
@@ -55,23 +71,94 @@ s/.*?(<voetballer.*)/\1/ms;
 s/^<\/personen>.*//ms;
 
 # In $_ zitten nu enkel voetballers
-while(/<voetballer id=\"(.*?)\" nationaliteit=\"(.*?)\">.*?<naam>(.*?)<\/naam>.*?<foto>(.*?)<\/foto>.*?<positie>(.*?)<\/positie>(.*?)<\/voetballer>/gs){
-  print "$1 $2 $3 $4 $5 $6\n";
-  push @voetballers, {
+while(/<voetballer\sid=\"(.*?)\"\s
+nationaliteit=\"(.*?)\">.*?
+<naam>(.*?)<\/naam>.*?
+<foto>(.*?)<\/foto>.*?
+<positie>(.*?)<\/positie>.*?
+.*?<werkgevers>(.*?)<\/werkgevers>.*?
+<\/voetballer>/gsx){
+
+my $speler = {
     id => $1,
     nationaliteit => $2,
     naam => $3,
     foto => $4,
-    positie => $5
-  }
+    positie => $5,
+    werkgevers => {}
+};
+
+$werkgever = $6;
+  while($werkgever =~ /.*<werkgever naam=\"(.{3})\">.*?<\/werkgever>/g){
+    $speler->{werkgevers}{$1} = undef;
+  } 
+  push @voetballers, $speler; 
 }
 
-for $i (0 .. scalar @voetballers){
-  while(($key, $value) = each(@voetballers[$i])){
-    print "$key: $value\n";
-  }
-  print "\n\n";
+#print Dumper @voetballers;
+
+# Nu alle clubs eruit halen
+$_ = $f;
+s/.*<clubs>.*?(<club.*)/\1/gs;
+s/(.*)<\/clubs>/\1/gs;
+
+while(/<club\sid=\"(.*?)\">.*?
+      <naam>(.*?)<\/naam>.*?
+      <clubkleuren>(.*?)<\/clubkleuren>.*?
+      <oprichtingsdatum>(.*?)<\/oprichtingsdatum>.*?
+      <logo>(.*?)<\/logo>.*?
+      <website>(.*?)<\/website>.*?
+      <naam>(.*?)<\/naam>.*?
+      <capaciteit>(.*?)<\/capaciteit>.*?
+      <straat>(.*?)<\/straat>.*?
+      <nummer>(.*?)<\/nummer>.*?
+      <naam>(.*?)<\/naam>.*?
+      <postcode>(.*?)<\/postcode>.*?
+
+/gsx){
+  push @clubs, {
+    id => $1,
+    naam => $2,
+    clubkleuren => $3,
+    oprichtingsdatum => $4,
+    logo => $5,
+    website => $6,
+      stadion => {
+      naam => $7,
+      capaciteit => $8,
+      adres => {
+        straat => $9,
+        nummer => $10,
+        naam => $11,
+        postcode => $12
+      }
+    }
+  };
 }
+
+
+%idmap = map {$_->{id}, $_->{naam}} @clubs;
+
+
+
+# Inverteer de gegeven landcodes
+@codes{@{$landcodes{$_}}} = ($_) x scalar @{$landcodes{$_}} foreach keys %landcodes;
+
+%posities = map {$_->{positie}, undef} @voetballers;
+%continenten = map {$codes{$_->{nationaliteit}}, undef} @voetballers;
+
+%clubhash = map {$_->{id}, $_->{naam}} @clubs;
+
+for $club (keys %clubhash){
+   print Dumper $_->{werkgevers}{$club} foreach @voetballers;
+   my @voetballeros = grep { exists $_->{werkgevers}{$club} } @voetballers;
+  print Dumper \@voetballeros;
+}
+
+#print Dumper \%voetballersperclub;
+
+
+
 
 __DATA__
 <personen>
