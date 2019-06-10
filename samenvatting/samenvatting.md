@@ -22,23 +22,16 @@ $array = [];
 $hash = {};
 ```
 
-#### Lijst cyclisch overlopen
+#### Printf en Sprintf
 
-Basic idee: Wanneer je een element pop/shift moet je het terug op de omgekeerde
-plaats in de lijst zetten. Als je `pop` doet (achteraan verwijderen), doe dan `unshift`
-van die waarde (vooraan toevoegen). Als je `shift` (vooraan verwijderen) doe dan
-`push` (vooraan toevoegen)
+`sprintf` doet hetzelfde als `printf`, alleen wordt er niets geprint maar kan je
+de output bv opslaan in een variabele:
 
 ```perl
-# Uitgeschreven manier
-@array = (1, 2, 3);
-
-while(1){
-    $value = pop @array; # of hier shift
-    print $value, "\n";
-    unshift(@array, $value); # of hier push
-    sleep 1;
-}
+printf("%s %d", $string, $integer);
+#print een string en format deze met 3 plaatsen. De 0 vult plaatsen op
+printf("%03s", $string);
+printf("%-03s", $string); #Hetzelfde als het vorige maar links aligneren
 ```
 
 #### Variabele ($a) instellen op default waarde als een andere ($b) geen waarde had
@@ -147,6 +140,13 @@ We gebruiken hier **slicing**
 print join(", ", @array[0..scalar @array - 2]), " en ",  $array[-1];
 ```
 
+#### Enkel de eerste 10 elementen van een array uitschrijven
+
+```perl
+@array = qw(1 2 3 4 5 6 7 9 9 10 11 12 13);
+print join ", ",  @array[0 .. 9];
+```
+
 #### Lijst vergroten
 
 Gewoon op een index waar nog niets stond toevoegen.
@@ -154,6 +154,25 @@ Gewoon op een index waar nog niets stond toevoegen.
 ```perl
 @array = (1, 2, 3, 4, 5, 6, 7);
 $array[10] = 3;
+```
+
+#### Lijst cyclisch overlopen
+
+Basic idee: Wanneer je een element pop/shift moet je het terug op de omgekeerde
+plaats in de lijst zetten. Als je `pop` doet (achteraan verwijderen), doe dan `unshift`
+van die waarde (vooraan toevoegen). Als je `shift` (vooraan verwijderen) doe dan
+`push` (vooraan toevoegen)
+
+```perl
+# Uitgeschreven manier
+@array = (1, 2, 3);
+
+while(1){
+    $value = pop @array; # of hier shift
+    print $value, "\n";
+    unshift(@array, $value); # of hier push
+    sleep 1;
+}
 ```
 
 #### Array: toevoegen en verwijderen
@@ -173,8 +192,6 @@ $var = shift @array;
 @elemnten = splice(@array, -2); # Laatste twee verwijderen
 ```
 
-#### Array circulair overlopen
-
 #### Sorteren
 
 ```perl
@@ -182,6 +199,37 @@ sort @array; # Sorteert gewoon
 reverse sort @array; # Omgekeerd sorteren (meestal alfabetisch)
 sort {$a operator $b} @array; # Uitgebreid sorteren
 sort {$a <=> $b} @array; # Spaceship operator, voor numeriek ordenen.
+sort {$a cmp $b} @array; # Voor alfabetisch
+```
+
+#### Sorteren op meerdere waarden
+
+Net zoals in SQL: sorteren op een primaire kolom, daarna op een secundaire, ...
+
+```perl
+# Bijvoorbeeld op een array van hashes zoals hier
+$namen = [
+    {voornaam => "Cedric", achternaam => "Vanhaverbeke"},
+    {voornaam => "Cedric", achternaam => "Vaanhaverbeke"}
+];
+
+sort { $a->{naam} cmp $b->{naam} || $a->{voornaam} cmp $b->{voornaam} } @$namen;
+```
+
+#### Array shufflen
+
+Shuffelen is alle elementen van de array in verschillende volgorde plaatsen.
+
+```perl
+sort {int(rand(63)) <=> int(rand(63))} @array;
+```
+
+#### Bepalen van het maximale element van een lijst
+
+Zonder een maxfunctie.
+
+```perl
+$max = [reverse sort {$a <=> $b} @array]->[0];
 ```
 
 #### Duplicaten verwijderen
@@ -283,10 +331,11 @@ while (<>){
 
 #### Paragraafmode
 
-`$/` bevat de paragraafmode
+`$/` bevat het scheidingsteken. Standaard is dit `"\n"`
 
 ```perl
-$/ = "";
+$/ = ""; #paragraafmode
+$/ = undef; # alles kan nu in 1 keer worden ingelezen
 ```
 
 ## Regexen in Perl
@@ -303,7 +352,7 @@ print "$1 $2 $3 $4";
 ($a, $b, $c, $d) = ($string =~ m/(\d) (\d) (\d) (\d)/);
 ```
 
-#### Regex vlaggen
+#### Regex modififers
 
 ```bash
 g; # global:  Don't return after first match
@@ -311,6 +360,7 @@ i; # insensitive: case insensitive matching
 s; # single line: dot matches newline
 m; # multi-line: ^ matches beginning of line and $ matches end of line
    # ==> HANDIG om samen met s te gebruiken
+x; # ignore spaces: kan handig zijn om een lange regex over meerdere lijnen te verspreiden
 
 # Standaard zijn identifiers greedy
 
