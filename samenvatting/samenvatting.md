@@ -15,6 +15,7 @@ $scalair = "";
 
 # Checken of een sleutel bestaat
 if exists $hash{key};
+# Checken of een waarde horend bij een sleutel bestaat
 if defined $hash{key};
 
 # Referenties naar arrays en hashes
@@ -243,6 +244,9 @@ while(<>){
 
 # Bulk inlezen en in 1 string zetten
 $file = join "", @lines;
+#of
+$/ undef;
+$file = <>;
 
 # Omgekeerd verwerken
 @lines = reverse @lines;
